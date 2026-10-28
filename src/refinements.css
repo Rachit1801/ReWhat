@@ -11,6 +11,8 @@
 .floating-label.label-top{top:0;left:0}.floating-label.label-bottom{bottom:2px;right:-6px}.visual-note{display:none}
 .visual-orbit{width:440px;height:440px;top:20px}.orbit-two{width:500px;height:500px;top:-10px}
 .return-chat{bottom:18px;right:20px}
+.github-link{color:var(--text);text-decoration:none}
+@media(max-width:520px){.app-header nav{gap:8px}.app-header .privacy-pill{height:32px;width:32px;padding:0;justify-content:center}.app-header .privacy-pill>span{display:none}.app-header .privacy-pill>svg{display:block}}
 .app.chat-active{height:100dvh;min-height:0;overflow:hidden}
 .chat-active .app-header{height:48px;width:100%;max-width:none;padding:0 22px;border-bottom:1px solid var(--border)}
 .chat-active .brand{font-size:20px;gap:7px}.chat-active .brand-mark{width:28px;height:28px;border-radius:9px}.chat-active .brand-mark svg{width:17px}
