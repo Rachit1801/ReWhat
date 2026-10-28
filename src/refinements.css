@@ -20,8 +20,10 @@
 .chat-header{height:64px;min-height:64px;padding:10px 24px;gap:12px}
 .chat-title h1{font-size:16px;margin-bottom:5px}.chat-title>span{font-size:10px}.chat-header-actions{gap:9px}
 .conversation-inner{max-width:1440px;min-height:100%}.virtual-row{padding:0 clamp(24px,5vw,90px)}
-.chat-wallpaper{background-image:url('/doodles.svg');background-size:360px;background-color:#111b21}
-:root[data-theme=light] .chat-wallpaper{background-color:#efeae2}
+/* A transparent mask preserves the supplied SVG and lets CSS color it per theme. */
+.chat-wallpaper{position:relative;isolation:isolate;background-image:none;background-color:#0b141a;--wallpaper-ink:#fff;--wallpaper-opacity:.09}
+.chat-wallpaper::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background-color:var(--wallpaper-ink);opacity:var(--wallpaper-opacity);-webkit-mask-image:url('/whatsapp-wallpaper.svg');mask-image:url('/whatsapp-wallpaper.svg');-webkit-mask-repeat:repeat;mask-repeat:repeat;-webkit-mask-size:374px 666px;mask-size:374px 666px}
+:root[data-theme=light] .chat-wallpaper{background-color:#efeae2;--wallpaper-ink:#6f675c;--wallpaper-opacity:.17}
 .message-row{padding-top:5px;padding-bottom:2px}.message-row.grouped{padding-top:0}
 .message-bubble{max-width:min(70%,640px);padding:7px 10px 5px;border-radius:0 8px 8px 8px;background:#202c33;min-width:70px}
 .outgoing .message-bubble{background:#005c4b;border-radius:8px 0 8px 8px}.grouped .message-bubble{border-radius:8px}
