@@ -6,9 +6,8 @@ export function Landing({ onFile, onDemo, onPick, onHelp, error }: { onFile: (fi
   return <main className="landing">
     <section className="hero">
       <div className="hero-copy">
-        <div className="eyebrow"><span className="status-dot" /> YOUR CHATS. YOUR DEVICE.</div>
-        <h1>Some chats<br />are worth<br /><span>coming back to.</span><svg className="hero-underline" viewBox="0 0 410 16" aria-hidden="true"><path d="M3 10Q182-3 405 8M42 14Q225 3 370 11" /></svg></h1>
-        <p className="hero-description">Turn your WhatsApp exports into conversations again.<br className="desktop-break" /> Every message. Every memory. All in one place.</p>
+        <h1>Some chats are worth<br /><span>coming back to.</span><svg className="hero-underline" viewBox="0 0 410 16" aria-hidden="true"><path d="M3 10Q182-3 405 8M42 14Q225 3 370 11" /></svg></h1>
+        <p className="hero-description">Your WhatsApp conversations, together again.</p>
         <div className={`dropzone ${dragging ? 'dragging' : ''}`} onDragOver={event => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={event => { event.preventDefault(); setDragging(false); const file = event.dataTransfer.files[0]; if (file) onFile(file); }}>
           <div className="dropzone-icon"><FileArchive size={26} strokeWidth={1.5} /><span className="upload-mini"><ArrowUpRight size={12} /></span></div>
           <div className="dropzone-copy"><strong>Drop your chat ZIP here</strong><span>With media or without. We’ll put it together.</span></div>
@@ -37,7 +36,5 @@ export function Landing({ onFile, onDemo, onPick, onHelp, error }: { onFile: (fi
         <div className="visual-note"><svg viewBox="0 0 58 50" aria-hidden="true"><path d="M48 3q-4 32-36 28m0 0 10-10m-10 10 13 7" /></svg><span>Same conversation.<br />A fresh way to revisit it.</span></div>
       </div>
     </section>
-    <section className="benefits" aria-label="Features"><div><MessageCircle size={21} /><span><strong>Feels like your chat</strong><small>Familiar bubbles. Original order.</small></span></div><div><Image size={21} /><span><strong>More than messages</strong><small>Photos, videos, voice notes & more.</small></span></div><div><ShieldCheck size={21} /><span><strong>Private. By design.</strong><small>No uploads. No accounts. Just you.</small></span></div><div><MonitorSmartphone size={21} /><span><strong>At home on any screen</strong><small>From your phone to your desktop.</small></span></div></section>
-    <div className="landing-bottom"><span>Good conversations don’t have an expiry date.</span><ArrowDown size={14} /><button onClick={onHelp}>Give yours a second look <ArrowUpRight size={13} /></button></div>
   </main>;
 }

@@ -1,4 +1,4 @@
-# Chatfold
+# ReWhat
 
 A static WhatsApp export viewer. React, TypeScript, Vite, plain CSS, Lucide, zip.js, and TanStack Virtual. No server application or database.
 
@@ -39,7 +39,7 @@ node scripts/verify-sample.mjs "/absolute/path/to/sample.zip"
 
 Verified sample expectations: 31 dated records, 29 participant messages, two participants, three matched images, one image caption, four blank records, and original source order. The first mapped payment screenshot was also compared visually with the original WhatsApp screenshot.
 
-WhatsApp exports lose information: native payment cards become text, some calls become blank timed records, and read/forward/reply metadata may be absent. Chatfold keeps the exported text or a neutral placeholder; it does not reconstruct missing statuses.
+WhatsApp exports lose information: native payment cards become text, some calls become blank timed records, and read/forward/reply metadata may be absent. ReWhat keeps the exported text or a neutral placeholder; it does not reconstruct missing statuses.
 
 ## Synthetic browser fixtures
 
