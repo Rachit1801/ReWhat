@@ -17,7 +17,7 @@ test('first import and media work fully offline; refreshing clears the session',
   await page.getByRole('button', { name: 'Search conversation', exact: true }).click();
   await page.getByRole('textbox', { name: 'Search messages' }).fill('tiny photo');
   await page.getByRole('button', { name: 'Enlarge pixel.png', exact: true }).click();
-  await expect(page.getByRole('dialog').getByRole('img')).toBeVisible();
+  await expect(page.getByRole('dialog').getByRole('img', { name: 'pixel.png', exact: true })).toBeVisible();
   expect(requests).toEqual([]);
   expect(await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length }))).toEqual({ local: 0, session: 0 });
   expect(await context.cookies()).toEqual([]);

@@ -40,6 +40,7 @@ export function attachmentResolver(entries: ArchiveEntry[]) {
     const matches = paths.get(path) ?? basenames.get(path.split('/').pop()!.toLocaleLowerCase('en')) ?? [];
     return {
       id, filename: path, ...mediaType(path),
+      ...(/\.gif$|(?:^|[\/_-])GIF[-_].*\.(?:mp4|webm)$/i.test(path) ? { animated: true } : {}),
       ...(matches.length === 1 ? { entryId: matches[0].id }
         : { unavailable: matches.length ? 'ambiguous' as const : 'missing' as const }),
     };
@@ -107,19 +108,25 @@ export function parseTranscript(text: string, entries: ArchiveEntry[] = [], date
   const dateCache = new Map<string, ReturnType<typeof stamp>>();
   const resolve = attachmentResolver(entries);
   const participants: string[] = [];
-  const messages: Message[] = records.map((record, index) => {
+  const parsedMessages: Message[] = records.map((record, index) => {
     const body = record.body.replace(/\n+$/, '');
     const senderMatch = body.match(/^([^:\n]{1,160}):(?: |$)([\s\S]*)$/);
     const sender = senderMatch ? senderMatch[1].replace(directional, '').trim() : null;
     if (sender && !participants.includes(sender)) participants.push(sender);
     let message = senderMatch ? senderMatch[2] : body;
     const attachments: Attachment[] = [];
+    const addAttachment = (filename: string) => {
+      const attachment = resolve(filename, `a-${index}-${attachments.length}`);
+      // Some exports repeat a file in Android and iOS marker forms. One reference
+      // per source message is enough; separate messages must remain separate.
+      if (!attachments.some(a => a.entryId && a.entryId === attachment.entryId || a.filename === attachment.filename)) attachments.push(attachment);
+    };
     // Match complete attachment markers only, keeping captions and their line breaks.
     message = message.replace(/^[\u200e\u200f]?(.+?) \(file attached\)\s*$/gm, (_, filename: string) => {
-      attachments.push(resolve(filename, `a-${index}-${attachments.length}`)); return '';
+      addAttachment(filename); return '';
     });
     message = message.replace(/[\u200e\u200f]?<attached:\s*([^>]+)>/gi, (_, filename: string) => {
-      attachments.push(resolve(filename, `a-${index}-${attachments.length}`)); return '';
+      addAttachment(filename); return '';
     });
     const omitted = message.replace(directional, '').trim().match(/^<?(?:(image|video|audio|sticker|document|gif|media|contact card) omitted)>?$/i);
     if (omitted) {
@@ -132,6 +139,12 @@ export function parseTranscript(text: string, entries: ArchiveEntry[] = [], date
     if (!dateStamp) { dateStamp = stamp(record.date, '', chosenOrder); dateCache.set(record.date, dateStamp); }
     return { id: `m-${record.line}`, sourceIndex: index, sender, text: attachments.length ? message.replace(/^\n+|\n+$/g, '') : message,
       ...dateStamp, time: record.time, rawTimestamp: `${record.date}, ${record.time}`, attachments };
+  });
+  const messages = parsedMessages.filter((message, index) => {
+    const previous = parsedMessages[index - 1];
+    // A duplicated export record can point at the very same image entry twice.
+    // Do not collapse different files, captions, senders, or timestamps.
+    return !(previous && message.sender === previous.sender && message.rawTimestamp === previous.rawTimestamp && message.text === previous.text && message.attachments.length > 0 && message.attachments.length === previous.attachments.length && message.attachments.every((attachment, i) => attachment.kind === 'image' && !!attachment.entryId && attachment.entryId === previous.attachments[i].entryId));
   });
   if (preamble.join('\n').trim()) messages.unshift({ id: 'preamble', sourceIndex: -1, sender: null, text: preamble.join('\n').trim(), dateKey: null, dateLabel: '', time: '', rawTimestamp: '', attachments: [] });
   const missing = messages.flatMap(m => m.attachments).filter(a => a.unavailable && a.unavailable !== 'omitted').length;

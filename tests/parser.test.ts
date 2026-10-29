@@ -71,6 +71,16 @@ describe('attachment mapping', () => {
     expect(chat.messages[0].attachments[0]).toMatchObject({ entryId: 'two', kind: 'sticker' });
     expect(chat.messages[0].text).toBe('');
   });
+  it('renders repeated attachment markers and duplicate image records once, preserving distinct sends', () => {
+    const text = '17/03/26, 2:00 pm - Alex: IMG-1.jpg (file attached)\n<attached: media/IMG-1.jpg>\nCaption\n17/03/26, 2:00 pm - Alex: IMG-1.jpg (file attached)\nCaption\n17/03/26, 2:01 pm - Alex: IMG-1.jpg (file attached)\nCaption\n17/03/26, 2:01 pm - You: IMG-1.jpg (file attached)\nCaption';
+    const chat = parseTranscript(text, entries);
+    expect(chat.messages).toHaveLength(3);
+    expect(chat.messages.every(message => message.attachments.length === 1 && message.text === 'Caption')).toBe(true);
+  });
+  it('marks GIFs and named GIF videos as animated without autoplaying ordinary videos', () => {
+    const chat = parseTranscript('17/03/26, 2:00 pm - Alex: <attached: GIF-1.mp4>\n17/03/26, 2:01 pm - Alex: <attached: animation.gif>\n17/03/26, 2:02 pm - Alex: <attached: VID-1.mp4>');
+    expect(chat.messages.map(message => !!message.attachments[0].animated)).toEqual([true, true, false]);
+  });
   it('handles omitted media without making up attachments', () => {
     const chat = parseTranscript('17/03/26, 2:00 pm - Alex: <Media omitted>\n17/03/26, 2:01 pm - You: \u200eimage omitted');
     expect(chat.messages.map(m => m.attachments[0].unavailable)).toEqual(['omitted', 'omitted']);

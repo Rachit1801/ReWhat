@@ -4,6 +4,7 @@ export interface ArchiveEntry { id: string; path: string; size: number }
 export interface Attachment {
   id: string; filename: string; kind: MediaKind; mime: string;
   entryId?: string; unavailable?: 'missing' | 'ambiguous' | 'omitted';
+  animated?: boolean;
 }
 export interface Message {
   id: string; sourceIndex: number; sender: string | null; text: string;

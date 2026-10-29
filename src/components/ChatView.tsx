@@ -7,6 +7,8 @@ import type { MediaStore } from '../lib/media-store';
 import { FormattedText } from './FormattedText';
 import { IconButton } from './Icons';
 import { Lightbox, Media } from './Media';
+import { isGrouped, richContent } from '../lib/message-content';
+import { RichMessage } from './RichMessage';
 type Row = { type: 'date'; id: string; label: string } | { type: 'message'; id: string; message: Message; grouped: boolean };
 export function ChatView({ chat, me, store, filename, isDemo, onImport, onClear, onIdentity, onBack, theme, onToggleTheme }: { chat: ParsedChat; me: string; store: MediaStore; filename: string; isDemo: boolean; onImport: () => void; onClear: () => void; onIdentity: () => void; onBack: () => void; theme: 'dark' | 'light'; onToggleTheme: () => void }) {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -27,7 +29,7 @@ export function ChatView({ chat, me, store, filename, isDemo, onImport, onClear,
     chat.messages.forEach((message, index) => {
       if (message.dateKey && message.dateKey !== date) { result.push({ type: 'date', id: `date-${message.id}`, label: message.dateLabel }); date = message.dateKey; }
       const previous = chat.messages[index - 1];
-      result.push({ type: 'message', id: message.id, message, grouped: !!message.sender && previous?.sender === message.sender && previous.dateKey === message.dateKey });
+      result.push({ type: 'message', id: message.id, message, grouped: isGrouped(message, previous) });
     }); return result;
   }, [chat]);
   const matches = useMemo(() => !searchQuery ? [] : rows.flatMap((row, index) => row.type === 'message' && `${row.message.text} ${row.message.attachments.map(a => a.filename).join(' ')}`.toLocaleLowerCase().includes(searchQuery.toLocaleLowerCase()) ? [index] : []), [rows, searchQuery]);
@@ -60,12 +62,13 @@ export function ChatView({ chat, me, store, filename, isDemo, onImport, onClear,
         <div className="conversation-inner" style={{ height: virtualizer.getTotalSize() }}>
           {virtualizer.getVirtualItems().map(item => {
             const row = rows[item.index];
+            const content = row.type === 'message' ? richContent(row.message.text) : null;
             return <div className="virtual-row" key={item.key} data-index={item.index} ref={virtualizer.measureElement} style={{ transform: `translateY(${item.start}px)` }}>
               {row.type === 'date' ? <div className="date-separator"><span>{row.label}</span></div> : row.message.sender === null ? <div className="system-row"><div>{row.message.text || 'Details unavailable in export'}{row.message.time && <time>{row.message.time}</time>}</div></div> : <div className={`message-row ${row.message.sender === me ? 'outgoing' : 'incoming'} ${row.grouped ? 'grouped' : ''} ${matches[matchIndex] === item.index ? 'active-match' : ''}`} data-message-id={row.message.id}>
                 <article style={{ '--media-width': `${mediaWidths[row.message.id] ?? 310}px` } as CSSProperties} className={`message-bubble ${row.message.attachments.some(a => a.kind === 'image' || a.kind === 'video') ? 'media-bubble' : ''} ${row.message.attachments.some(a => a.kind === 'sticker') && !row.message.text ? 'sticker-bubble' : ''}`} aria-label={`${row.message.sender}, ${row.message.dateLabel}, ${row.message.time}`}>
                   {group && row.message.sender !== me && !row.grouped && <div className={`sender-name sender-${chat.participants.indexOf(row.message.sender) % 5}`}>{row.message.sender}</div>}
                   {row.message.attachments.map(attachment => <Media key={attachment.id} attachment={attachment} store={store} onExpand={setExpanded} onImageSize={(width, height) => { const next = Math.round(Math.min(340, width * 420 / height)) + 10; setMediaWidths(previous => previous[row.message.id] === next ? previous : { ...previous, [row.message.id]: next }); }} />)}
-                  {row.message.text ? <div className="message-text"><FormattedText text={row.message.text} query={searchQuery} /><span className="message-time-space" aria-hidden="true">{row.message.time}</span></div> : !row.message.attachments.length ? <div className="empty-message"><Info size={13} /> Details unavailable in export<span className="message-time-space" aria-hidden="true">{row.message.time}</span></div> : null}
+                  {content ? <RichMessage key={row.message.id} content={content} query={searchQuery} /> : row.message.text ? <div className="message-text"><FormattedText text={row.message.text} query={searchQuery} /><span className="message-time-space" aria-hidden="true">{row.message.time}</span></div> : !row.message.attachments.length ? <div className="empty-message"><Info size={13} /> Details unavailable in export<span className="message-time-space" aria-hidden="true">{row.message.time}</span></div> : null}
                   <time className="message-time" title={row.message.rawTimestamp}>{row.message.time}</time>
                 </article>
               </div>}
